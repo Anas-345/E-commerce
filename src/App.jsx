@@ -7,6 +7,7 @@ function App() {
   const [feature, setFeature] = useState(false);
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
+  const [value, setValue] = useState('')
 
   function handleDiscount() {
     setDiscount((prev) => !prev);
@@ -22,6 +23,18 @@ function App() {
 
   function handlePrice(e) {
     setPrice(e.target.value);
+  }
+
+  function handleChange(e) {
+    setDiscount(false)
+    setFeature(false)
+    setCategory('')
+    setPrice('')
+    setValue(e.target.value)
+  }
+
+  function handleClick() {
+    setValue('')
   }
 
   const discountedProducts = discount
@@ -43,6 +56,13 @@ function App() {
       })
     : productByCategory;
 
+  const productByName = data.filter(product =>{ 
+    const title = product.title.toLowerCase()
+    const val = value.toLowerCase() 
+    return title.includes(val)
+  }
+  )
+
   let categories = [...new Set(data.map((product) => product.category))];
 
   return (
@@ -53,8 +73,9 @@ function App() {
           <div>
             <input
               type="checkbox"
+              checked={discount}
               id="discount"
-              onClick={handleDiscount}
+              onChange={handleDiscount}
               className="cursor-pointer"
             />
             <label className="text-white text-xl ml-2" htmlFor="discount">
@@ -65,7 +86,8 @@ function App() {
             <input
               type="checkbox"
               id="feature"
-              onClick={handleFeature}
+              checked={feature}
+              onChange={handleFeature}
               className="cursor-pointer"
             />
             <label className="text-white text-xl ml-2" htmlFor="feature">
@@ -99,10 +121,21 @@ function App() {
               <option value="150-200"> 150 - 200 </option>
             </select>
           </div>
+          <div>
+            <input
+              type="text"
+              placeholder="Search"
+              className="bg-white outline-0 p-2 rounded-3xl w-sm"
+              onChange={(e)=>handleChange(e)}
+              value={value}
+              onKeyDown={(e) => e.key === 'Enter' && handleClick()}
+            />
+          </div>
         </div>
       </div>
       <div className="flex mx-6 flex-wrap min-h-screen">
-        {productByPrice.map((product) => (
+        { value.trim() ?
+        productByName.map(product => (
           <Card
             title={product.title}
             image={product.image}
@@ -111,7 +144,20 @@ function App() {
             price={product.price}
             discount={product.discount}
           />
-        ))}
+        ))
+        :
+        productByPrice.map((product) => (
+          <Card
+            title={product.title}
+            image={product.image}
+            key={product.id}
+            category={product.category}
+            price={product.price}
+            discount={product.discount}
+          />
+        ))
+
+      }
       </div>
     </>
   );
