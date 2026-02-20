@@ -1,67 +1,81 @@
 import { useState } from "react";
 import Card from "./Components/Card";
 import data from "./data";
+import Cart from "./Components/Cart";
 
 function App() {
   const [discount, setDiscount] = useState(false);
   const [feature, setFeature] = useState(false);
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
-  const [value, setValue] = useState('')
+  const [value, setValue] = useState("");
+  const [cart, setCart] = useState([]);
 
   function handleDiscount() {
-    setDiscount((prev) => !prev);
+    setDiscount(true);
+    setFeature(false);
+    setCategory("");
+    setPrice("");
   }
 
   function handleFeature() {
-    setFeature((prev) => !prev);
+    setFeature(true);
+    setCategory("");
+    setPrice("");
+    setDiscount(false);
   }
 
   function handleCategory(e) {
     setCategory(e.target.value);
+    setDiscount(false);
+    setFeature(false);
+    setPrice("");
   }
 
   function handlePrice(e) {
     setPrice(e.target.value);
+    setDiscount(false);
+    setFeature(false);
+    setCategory("");
   }
 
   function handleChange(e) {
-    setDiscount(false)
-    setFeature(false)
-    setCategory('')
-    setPrice('')
-    setValue(e.target.value)
+    setDiscount(false);
+    setFeature(false);
+    setCategory("");
+    setPrice("");
+    setValue(e.target.value);
   }
 
   function handleClick() {
-    setValue('')
+    setValue("");
   }
 
-  const discountedProducts = discount
+  let filterProducts = discount
     ? data.filter((product) => product.discount)
     : data;
 
-  const featuredProducts = feature
-    ? discountedProducts.filter((product) => product.isFeatured)
-    : discountedProducts;
+  filterProducts = feature
+    ? data.filter((product) => product.isFeatured)
+    : filterProducts;
 
-  const productByCategory = category
-    ? featuredProducts.filter((product) => product.category === category)
-    : featuredProducts;
+  filterProducts = category
+    ? data.filter((product) => product.category === category)
+    : filterProducts;
 
-  const productByPrice = price
-    ? productByCategory.filter((product) => {
+  filterProducts = price
+    ? data.filter((product) => {
         const [min, max] = price.split("-").map((item) => Number(item));
         return product.price >= min && product.price <= max;
       })
-    : productByCategory;
+    : filterProducts;
 
-  const productByName = data.filter(product =>{ 
-    const title = product.title.toLowerCase()
-    const val = value.toLowerCase() 
-    return title.includes(val)
-  }
-  )
+  const productByName = data.filter((product) => {
+    const title = product.title.toLowerCase();
+    const type = product.category.toLowerCase();
+    const val = value.toLowerCase();
+    return title.includes(val) || type.includes(val);
+  });
 
   let categories = [...new Set(data.map((product) => product.category))];
 
@@ -126,38 +140,42 @@ function App() {
               type="text"
               placeholder="Search"
               className="bg-white outline-0 p-2 rounded-3xl w-sm"
-              onChange={(e)=>handleChange(e)}
+              onChange={(e) => handleChange(e)}
               value={value}
-              onKeyDown={(e) => e.key === 'Enter' && handleClick()}
+              onKeyDown={(e) => e.key === "Enter" && handleClick()}
             />
           </div>
         </div>
       </div>
       <div className="flex mx-6 flex-wrap min-h-screen">
-        { value.trim() ?
-        productByName.map(product => (
-          <Card
-            title={product.title}
-            image={product.image}
-            key={product.id}
-            category={product.category}
-            price={product.price}
-            discount={product.discount}
-          />
-        ))
-        :
-        productByPrice.map((product) => (
-          <Card
-            title={product.title}
-            image={product.image}
-            key={product.id}
-            category={product.category}
-            price={product.price}
-            discount={product.discount}
-          />
-        ))
-
-      }
+        {value.trim()
+          ? productByName.map((product) => (
+              <Card
+                title={product.title}
+                image={product.image}
+                key={product.id}
+                category={product.category}
+                price={product.price}
+                discount={product.discount}
+                cart={cart}
+                setCart={setCart}
+              />
+            ))
+          : filterProducts.map((product) => (
+              <Card
+                title={product.title}
+                image={product.image}
+                key={product.id}
+                category={product.category}
+                price={product.price}
+                discount={product.discount}
+                cart={cart}
+                setCart={setCart}
+              />
+            ))}
+      </div>
+      <div className="text-white h-screen flex flex-col items-center">
+        <Cart cart={cart}/>
       </div>
     </>
   );
